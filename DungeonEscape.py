@@ -12,6 +12,7 @@ class Player:
         self.ypos = 0
         self.kill_count = 0
 
+
     #Player Stats
     def __repr__(self):
         return self.name
@@ -22,7 +23,7 @@ class Player:
 
     #Basic and Heavy Attacks
     def basic_attack(self, enemy):
-        if self.stamina > 10:
+        if self.stamina >= 10:
             self.stamina -= 10
             enemy.health -= 20
             print()
@@ -47,7 +48,7 @@ class Player:
     def rest_up(self):
         print("You took a rest! Gain 20 stamina.")
         self.stamina += 20
-        print(self.stamina)
+        return "Player Stamina: {stamina}".format(stamina = self.stamina)
     
     #Resets the player if they die
     def respawn(self):
@@ -159,6 +160,8 @@ class Castle:
             self.game_world[curr_x][curr_y] = "-"
     
     def items_in_castle(self, player, bag):
+        boss_arena = BattleSimulator(player)
+        SK_complete = False
         if self.game_world[0][6] == player:
             print("You have stumbled upon a storage room: Inside you notice a trap door with a lock:")
             print("On the lock you can enter three numbers from 0 to 9.")
@@ -219,7 +222,7 @@ class Castle:
                 print("Warrior: Prove yourself first and then return!")
                 return
         
-        elif self.game_world[5][0] == player:
+        elif self.game_world[5][0] == player and SK_complete == False:
             print("You have entered the Dungeon Cellars!")
             print("You look around and notice green goop.")
             print("You notice a trail of this goop further down the dungeon")
@@ -227,7 +230,8 @@ class Castle:
             print("You go to grab but the goop begins to form!")
             print("GRARARAHAHAAHRHARHAH")
 
-            BattleSimulator.boss_sim(player, SlimeKing(), bag, 1)
+            boss_arena.boss_sim(player, SlimeKing(), bag)
+            SK_complete = True
             return 1
         else:
             return "You traverse the halls!"
@@ -299,18 +303,27 @@ class SlimeKing:
         self.damage = 10
         self.stamina = 50
 
+    def __repr__(self):
+        return "{name} HP: {health}".format(name = self.name, health = self.health)
+
     def divide(self):
         mob = Mob()
-        BattleSimulator.battle_sim(player, mob, bag)
-    
+        battle_arena = BattleSimulator(player)
+        print("The Slime King divided spawning a slime minion!")
+        battle_arena.battle_sim(player, mob, bag)
+        print("Minion Defeated!")
+
     def goo_shot(self, player):
         player.health -= self.damage
         player.stamina -= 10
+        print()
+        print("Slime King spits goo at you!")
+        print("Player damaged! {health} HP!".format(health = player.health))
 
     def slime_battle(self, chance, player):
-        chance = random.randint() * 100
+        chance = random.randint(0, 101)
         if chance <= 20:
-            self.divide(player)
+            self.divide()
         else:
             self.goo_shot(player)
 
@@ -324,7 +337,7 @@ class BattleSimulator:
     def encounter(self):
         encounter_chance = random.random() * 100
 
-        if encounter_chance >= 50.0:
+        if encounter_chance >= 100: #SWITCH AFTER
             print("An enemy is preventing you from moving!")
             return 1
         else:
@@ -353,7 +366,6 @@ class BattleSimulator:
                 enemy.attack(player)
             
             if enemy.health < 0:
-                print('Enemy Defeated!')
                 print()
                 break
             if player.health < 0:
@@ -361,44 +373,49 @@ class BattleSimulator:
                 player.respawn()
                 break
     
-    def boss_sim(self, player, boss, bag, key):
-            chance = random.randint() * 100
+    def boss_sim(self, player, boss, bag):
+            chance = random.randint(0, 101)
         
             while boss.health > 0:
+
+                if boss.health == 0: #Does not allow boss to use another move
+                    break
+
+
                 if boss.name == "Slime King":
-                    action = input("Choose an action: (Attack: A, Rest: R, Heal: H)")
+                    action = input("Choose an action: (Attack: A, Rest: R, Heal: K)")
                     if action == "A":
                         attack_action = input("Basic Attack (B) or Heavy Attack (H)")
-                    if attack_action == "B":
-                        player.basic_attack(boss)
-                        boss.slime_battle(player)
-                    elif attack_action == "H":
-                        player.heavy_attack(boss)
-                        boss.slime_battle(player)
-                elif action == "R":
-                    player.rest_up()
-                    boss.slime_battle(player)
+                        if attack_action == "B":
+                            player.basic_attack(boss)
+                            if boss.health == 0:  # Does not allow boss to use another move
+                                break
+                            boss.slime_battle(0, player)
+                        elif attack_action == "H":
+                            player.heavy_attack(boss)
+
+                            if boss.health == 0:  # Does not allow boss to use another move
+                                break
+
+                            boss.slime_battle(0, player)
+                            continue
+
+                    elif action == "R":
+                        player.rest_up()
+                        boss.slime_battle(0, player)
             
-                elif action == "H":
-                    player.use_potion(bag)
-                    boss.slime_battle(player)
-                
-                if boss.health <= 0:
-                    if boss.name == "Slime King":
-                        player.stone_count += 1
-                        print("The green goop began to dissolve leaving only a glowing blue stone")
-                        print("You place the stone in your bag!")
-                    
-            
+                    elif action == "K":
+                        player.use_potion(bag)
+                        boss.slime_battle(0, player)
+
+
+            if boss.name == "Slime King":
+                bag.stone_count += 1
+                print("The green goop began to dissolve leaving only a glowing blue stone")
+                print("You place the stone in your bag!")
 
 
 
-                 
-                
-                
-
-            
-                    
 
 #Start of Game
 
