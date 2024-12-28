@@ -25,6 +25,7 @@ class Player:
         if self.stamina > 10:
             self.stamina -= 10
             enemy.health -= 20
+            print()
             print("20 Damage done!")
             print(enemy.__repr__())
             print("Player Stamina: {stamina}".format(stamina = self.stamina))
@@ -35,6 +36,7 @@ class Player:
         if self.stamina > 20:
             self.stamina -= 20
             enemy.health -= 30
+            print()
             print("30 damage done!")
             print(enemy.__repr__())
             print("Player Stamina: {stamina}".format(stamina = self.stamina))
@@ -145,6 +147,7 @@ class Castle:
     def display_world(self):
         for i in self.game_world:
             print(i)
+        return ""
     
     def update_position(self, player, key):
         curr_x, curr_y = player.xpos, player.ypos
@@ -239,13 +242,14 @@ class Mob:
         self.damage = 10
     
     def __repr__(self):
-        return "This enemy has {hp}!".format(hp = self.health)
+        return "This enemy has {hp} HP!".format(hp = self.health)
     
     def attack(self, player):
         self.stamina -= 10
         player.health -= 10
-        print("10 damage done by the enemy!")
-        print(player.health)
+        print()
+        print("10 damage done by the {name}!".format(name = self.name))
+        print("{name} HP: {health}".format(name= player.name, health= player.health))
 
 class Warrior:
     def __init__(self):
@@ -350,6 +354,7 @@ class BattleSimulator:
             
             if enemy.health < 0:
                 print('Enemy Defeated!')
+                print()
                 break
             if player.health < 0:
                 print("You have been defeated!")
@@ -398,12 +403,16 @@ class BattleSimulator:
 #Start of Game
 
 print("Welcome Hero! Today is the day where we take back the Kings Castle from the evil Slimes!")
-name = input("Firstly, What is your name: ")    #Prompts users player name
+name = input("Firstly, What is your name: ")  #Prompts users player name
+print()
 print("Welcome " + name + "!")
 player = Player(name)          #Creates a Player object
 bag = Inventory()              #Creates a Inventory object
 castle = Castle(7,7, player)   #Creates a 7x7 2D game world with the player starting at the 0, 0 indexes
-sim = BattleSimulator(player)  #Creates a battle between player and enemies  
+sim = BattleSimulator(player) #Creates a battle between player and enemies
+print()
+print("Here is a map of the Castle:")
+print()
 print(castle.display_world())
 
 print()
