@@ -13,6 +13,7 @@ class Player:
         self.kill_count = 0
 
 
+
     #Player Stats
     def __repr__(self):
         return self.name
@@ -96,13 +97,7 @@ class Player:
                 return 0
         
     def use_potion(self, bag):
-        for item in bag.bagspace:
-            if isinstance(item, Potion):
-                bag.bagspace.pop(item)
-                player.health += 50
-                return "Potion used!"
-        else:
-            return "No potions in bag!"
+        return bag.use_potion(self)
                         
     
 class Inventory:
@@ -113,24 +108,36 @@ class Inventory:
         
     
     def __repr__(self):
-        return self.bagspace
+        for i in range(len(self.bagspace)):
+            print(str(i + 1) + ". Potion")
+        return ""
+
     
     def add_item(self, item):
         self.bagspace.append(item)
     
     def remove_item(self, item):
-        self.bagspace.pop(item)
-    
-    def view(self):
-        for i in self.bagspace:
-            print(i)
+        self.bagspace.remove(item)
+
+    def use_potion(self, player):
+        if self.bagspace:
+            self.bagspace.pop(0)
+            player.health += 50
+            if player.health > 100:
+                player.health = 100
+            return "Potion Used!"
+        return "No valid Potion!"
+
+
+
+
     
 class Potion:
     def __init__(self):
         pass
 
     def __repr__(self):
-        description = "A Potion heals the player for 20 health!"
+        description = "Potion"
         return description
 class Key:
     def __init__(self):
@@ -405,8 +412,8 @@ class BattleSimulator:
                         boss.slime_battle(0, player)
             
                     elif action == "K":
-                        player.use_potion(bag)
-                        boss.slime_battle(0, player)
+                            player.use_potion(bag)
+                            boss.slime_battle(0, player)
 
 
             if boss.name == "Slime King":
@@ -450,7 +457,7 @@ while True:
         print(player.show_stats())
 
     elif next_move == "I":
-        print(bag.view())
+        print(bag.__repr__())
 
     elif next_move == "W" or next_move == "D" or next_move == "S" or next_move == "A":
         chance = sim.encounter()
