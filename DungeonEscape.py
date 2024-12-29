@@ -150,6 +150,11 @@ class Castle:
     def __init__(self, rows, cols, player):
         self.game_world = [["-" for i in range(rows)] for j in range(cols)]
         self.game_world[player.xpos][player.ypos] = player
+
+        #Booleans that indicate whether an event in the castle has been completed or not.
+        self.SK_complete = False
+        self.WK_complete = False
+        self.SB_complete = False
         
 
     def display_world(self):
@@ -229,7 +234,7 @@ class Castle:
                 print("Warrior: Prove yourself first and then return!")
                 return
         
-        elif self.game_world[5][0] == player and SK_complete == False:
+        elif self.game_world[5][0] == player and self.SK_complete == False:
             print("You have entered the Dungeon Cellars!")
             print("You look around and notice green goop.")
             print("You notice a trail of this goop further down the dungeon")
@@ -237,8 +242,8 @@ class Castle:
             print("You go to grab but the goop begins to form!")
             print("GRARARAHAHAAHRHARHAH")
 
-            boss_arena.boss_sim(player, SlimeKing(), bag)
-            SK_complete = True
+            boss_arena.slimeking_sim(player, SlimeKing(), bag)
+            self.SK_complete = True
             return 1
         else:
             return "You traverse the halls!"
@@ -286,7 +291,7 @@ class StoneBeast:
         self.damage = 1
     
     def dazed(self, player):
-       chance = random.randint() * 100
+       chance = random.randint(0, 101)
 
        if chance > 50:
         print("You have been dazed by the light")
@@ -380,46 +385,36 @@ class BattleSimulator:
                 player.respawn()
                 break
     
-    def boss_sim(self, player, boss, bag):
+    def slimeking_sim(self, player, boss, bag):
             chance = random.randint(0, 101)
         
             while boss.health > 0:
 
-                if boss.health == 0: #Does not allow boss to use another move
-                    break
+                action = input("Choose an action: (Attack: A, Rest: R, Heal: K)")
 
+                if action == "A":
+                    attack_action = input("Basic Attack (B) or Heavy Attack (H)")
+                    if attack_action == "B":
+                        player.basic_attack(boss)
+                    elif attack_action == "H":
+                        player.heavy_attack(boss)
 
-                if boss.name == "Slime King":
-                    action = input("Choose an action: (Attack: A, Rest: R, Heal: K)")
-                    if action == "A":
-                        attack_action = input("Basic Attack (B) or Heavy Attack (H)")
-                        if attack_action == "B":
-                            player.basic_attack(boss)
-                            if boss.health == 0:  # Does not allow boss to use another move
-                                break
-                            boss.slime_battle(0, player)
-                        elif attack_action == "H":
-                            player.heavy_attack(boss)
+                elif action == "R":
+                    player.rest_up()
 
-                            if boss.health == 0:  # Does not allow boss to use another move
-                                break
-
-                            boss.slime_battle(0, player)
-                            continue
-
-                    elif action == "R":
-                        player.rest_up()
-                        boss.slime_battle(0, player)
             
-                    elif action == "K":
-                            player.use_potion(bag)
-                            boss.slime_battle(0, player)
+                elif action == "K":
+                    player.use_potion(bag)
 
-
-            if boss.name == "Slime King":
+            if boss.health <= 0:
                 bag.stone_count += 1
                 print("The green goop began to dissolve leaving only a glowing blue stone")
                 print("You place the stone in your bag!")
+                return ""
+
+            boss.slime_battle(0, player)
+            if player.health <= 0:
+                print("You have been defeated!")
 
 
 
@@ -450,7 +445,7 @@ while True:
 
     next_move = input("Enter an action (Press H key to view potential actions):").strip().upper()
     
-    if next_move == "H":
+    if next_move == "Z":
         print(player.potential_actions())
 
     elif next_move == "M":
