@@ -1,5 +1,6 @@
 
 import random
+import sys
 class Player:
     
     #Player Constructor
@@ -52,9 +53,12 @@ class Player:
         return "Player Stamina: {stamina}".format(stamina = self.stamina)
     
     #Resets the player if they die
-    def respawn(self):
-        self.health = 100
-        self.stamina = 50
+    def game_over(self):
+        if self.health <= 0:
+            print("You have been slain!")
+            print("Game Over!")
+            exit("Returning to Main Menu")
+
     
     def potential_actions(self):
        print("""
@@ -402,10 +406,9 @@ class BattleSimulator:
             if enemy.health < 0:
                 print()
                 break
-            if player.health < 0:
-                print("You have been defeated!")
-                player.respawn()
-                break
+            if player.health <= 0:
+                player.game_over()
+
     
     def slimeking_sim(self, player, boss, bag):
             chance = random.randint(0, 101)
@@ -428,15 +431,16 @@ class BattleSimulator:
                 elif action == "K":
                     player.use_potion(bag)
 
-            if boss.health <= 0:
-                bag.stone_count += 1
-                print("The green goop began to dissolve leaving only a glowing blue stone")
-                print("You place the stone in your bag!")
-                return ""
+                if boss.health <= 0:
+                    bag.stone_count += 1
+                    print("The green goop began to dissolve leaving only a glowing blue stone")
+                    print("You place the stone in your bag!")
+                    return ""
 
-            boss.slime_battle(0, player)
-            if player.health <= 0:
-                print("You have been defeated!")
+                boss.slime_battle(0, player)
+                if player.health <= 0:
+                    player.game_over()
+                    break
 
 
     def warriorking_sim(self, player, boss, bag):
@@ -470,6 +474,7 @@ class BattleSimulator:
 
             boss.warrior_battle(0, player)
             if player.health <= 0:
+                player.game_over()
                 print("You have been defeated!")
 
 
@@ -497,7 +502,7 @@ print()
 #Main Game Loop
 while True:
 
-    next_move = input("Enter an action (Press H key to view potential actions):").strip().upper()
+    next_move = input("Enter an action (Press Z key to view potential actions):").strip().upper()
     
     if next_move == "Z":
         print(player.potential_actions())
