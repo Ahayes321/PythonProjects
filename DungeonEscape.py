@@ -10,7 +10,7 @@ class Player:
         self.damage = 20
         self.xpos = 0
         self.ypos = 0
-        self.kill_count = 0
+        self.kill_count = 20
 
 
 
@@ -219,7 +219,7 @@ class Castle:
                 print("VRRRRRRRAAAAAAROOOOOM!!!!")
                 print("A giant stone beast has emerged from the well! You notice that within the beast is the face of the King!")
                 return 3
-        elif self.game_world[6][6] == player:
+        elif self.game_world[6][6] == player and self.WK_complete == False:
             print("You have reach the Throne Room!")
             print()
             print("You noticed an Enormous Warrior sitting on the King's Throne")
@@ -229,6 +229,9 @@ class Castle:
                 print("Warrior: I see that fervent bloodlust in your eyes!")
                 print("A fight to the death we shall have!")
                 print("PREPARE YOURSELF FOR THE AFTERLIFE!!!")
+
+                boss_arena.warriorking_sim(player, Warrior(), bag)
+                self.WK_complete = True
                 return 2
             else:
                 print("Warrior: Prove yourself first and then return!")
@@ -270,18 +273,37 @@ class Mob:
 class Warrior:
     def __init__(self):
         self.name = "Ragnar \"Deathbringer\" Thorson"
-        self.health = 80
+        self.health = 100
         self.stamina = 100
         self.damage = 30
+
+    def __repr__(self):
+        return "Warrior HP: {health}".format(health = self.health)
     
     def bloodlust(self, player):
+        print("The Warror unleashed a mountain of rage!")
+
         self.health += 10
         player.health -= self.damage
+        print(self)
+        print()
+        print("Player damaged! {health} HP!".format(health=player.health))
 
     def warriors_stance(self, player):
+        print("The warrior took a more aggressive posture!")
+
         self.health -= 20
         self.damage += 10
+
+        print(self)
+        print("Player Health: {health} HP!".format(health=player.health))
     
+    def warrior_battle(self, chance, player):
+        chance = random.randint(0, 101)
+        if chance <= 30 and self.health > 30:
+            self.warriors_stance(player)
+        else:
+            self.bloodlust(player)
 
 class StoneBeast:
     def __init__(self):
@@ -417,6 +439,38 @@ class BattleSimulator:
                 print("You have been defeated!")
 
 
+    def warriorking_sim(self, player, boss, bag):
+        chance = random.randint(0, 101)
+
+        while boss.health > 0:
+
+            action = input("Choose an action: (Attack: A, Rest: R, Heal: K)")
+
+            if action == "A":
+                attack_action = input("Basic Attack (B) or Heavy Attack (H)")
+                if attack_action == "B":
+                    player.basic_attack(boss)
+                elif attack_action == "H":
+                    player.heavy_attack(boss)
+
+            elif action == "R":
+                player.rest_up()
+
+
+            elif action == "K":
+                player.use_potion(bag)
+
+            if boss.health <= 0:
+                print("The warrior fell to one knee.")
+                print()
+                print("Warrior: You are strong! I did not expect this to be the day I was slain!")
+                print("Warrior: As a token for beating me take this! I looted it from the library, it could be useful.")
+                print("You placed the device in your bag!")
+                return ""
+
+            boss.warrior_battle(0, player)
+            if player.health <= 0:
+                print("You have been defeated!")
 
 
 #Start of Game
