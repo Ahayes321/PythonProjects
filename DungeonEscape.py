@@ -36,7 +36,7 @@ class Player:
             return "Not enough stamina!"
     
     def heavy_attack(self, enemy):
-        if self.stamina > 20:
+        if self.stamina >= 20:
             self.stamina -= 20
             enemy.health -= 30
             print()
@@ -148,6 +148,12 @@ class Key:
         pass
     def __repr__(self):
         description = "A golden key. Must unlock something..."
+class CipherDecoder:
+    def __init__(self):
+        pass
+    def __repr__(self):
+        description = "Decodes ciphertext!"
+        return description
 class Castle:
 
     #Creates a 2D game world
@@ -159,6 +165,12 @@ class Castle:
         self.SK_complete = False
         self.WK_complete = False
         self.SB_complete = False
+
+        #Potion events
+        self.P5 = False
+        self.P10 = False
+        self.P15 = False
+        self.P20 = False
         
 
     def display_world(self):
@@ -203,7 +215,7 @@ class Castle:
             print("Librarian: The ciphertext is: \"Qtyo esp dezyp lyo qppo te ez esp Hpww!\"")
             decoded = input("Do you know what the ciphertext says: ")
 
-            if decoded == "Find the stone and feed it to the Well!":
+            if decoded == "Find the stones and feed it to the Well!":
                 print("Librarian: You cracked it! Well done!")
                 print("Hmmm interesting, I actually happen to have a stone on me! I guess you deserve it for breaking the code")
                 print("You have acquired a stone!")
@@ -252,9 +264,68 @@ class Castle:
             boss_arena.slimeking_sim(player, SlimeKing(), bag)
             self.SK_complete = True
             return 1
+
+        elif self.game_world[4][4] == player:
+            print("As you are walking through the halls you notice a sign")
+            print("The Alchemist Lab")
+            print("You decide to enter the lab")
+            print()
+            print("Alchemist: Oooooo a newcomer I see!")
+            print("Alchemist: You look very beat up oh no oh no!")
+            print("I can offer you some potions for slime residue")
+
+            if player.kill_count >= 5 and self.P5 == False:
+                print("Oh yes! Thank you!")
+                print("Potion for you!")
+                five_kill_potion = Potion()
+                bag.add_item(five_kill_potion)
+                self.P5 = True
+
+            if player.kill_count >= 10 and self.P10 == False:
+                print("Oh yes! Thank you!")
+                print("Potion for you!")
+                print()
+                ten_kill_potion = Potion()
+                bag.add_item(ten_kill_potion)
+                self.P10 = True
+
+            if player.kill_count >= 15 and self.P15 == False:
+                print("Oh yes! Thank you!")
+                print("Potion for you!")
+                print()
+                fifteen_kill_potion = Potion()
+                bag.add_item(fifteen_kill_potion)
+                self.P15 = True
+
+            if player.kill_count >= 20 and self.P20 == False:
+                print("Oh yes! Thank you!")
+                print("Potion for you!")
+                print()
+                twenty_kill_potion = Potion()
+                bag.add_item(twenty_kill_potion)
+                self.P20 = True
+
+            if self.WK_complete:
+                print("Oh I see you defeated that brute in the Kings halls!")
+                print("You deserve a Potion for that too!")
+                print()
+                warrior_potion = Potion()
+                bag.add_item(warrior_potion)
+
+            if self.SK_complete:
+                print("Oh!! This is a rare slime residue!")
+                print("Two Potions for you!")
+                print()
+                slimeking1_potion = Potion()
+                slimeking2_potion = Potion()
+
+                bag.add_item(slimeking1_potion)
+                bag.add_item(slimeking2_potion)
+
+
         else:
             return "You traverse the halls!"
-                 
+
       
 class Mob:
 
@@ -277,7 +348,7 @@ class Mob:
 class Warrior:
     def __init__(self):
         self.name = "Ragnar \"Deathbringer\" Thorson"
-        self.health = 100
+        self.health = 70
         self.stamina = 100
         self.damage = 30
 
@@ -390,22 +461,24 @@ class BattleSimulator:
                 attack_action = input("Basic Attack (B) or Heavy Attack (H)")
                 if attack_action == "B":
                     player.basic_attack(enemy)
-                    enemy.attack(player)
+
                 elif attack_action == "H":
                     player.heavy_attack(enemy)
-                    enemy.attack(player)
+
                 
             elif action == "R":
                 player.rest_up()
                 enemy.attack(player)
             
-            elif action == "H":
+            elif action == "K":
                 player.use_potion(bag)
                 enemy.attack(player)
             
             if enemy.health < 0:
                 print()
                 break
+
+            enemy.attack(player)
             if player.health <= 0:
                 player.game_over()
 
@@ -418,11 +491,15 @@ class BattleSimulator:
                 action = input("Choose an action: (Attack: A, Rest: R, Heal: K)")
 
                 if action == "A":
-                    attack_action = input("Basic Attack (B) or Heavy Attack (H)")
+                    attack_action = input("Basic Attack (B) or Heavy Attack (H): ").strip().upper()
                     if attack_action == "B":
-                        player.basic_attack(boss)
+                        result = player.basic_attack(boss)
+                        if result:  # If insufficient stamina
+                            print(result)
                     elif attack_action == "H":
-                        player.heavy_attack(boss)
+                        result = player.heavy_attack(boss)
+                        if result:  # If insufficient stamina
+                            print(result)
 
                 elif action == "R":
                     player.rest_up()
@@ -438,9 +515,10 @@ class BattleSimulator:
                     return ""
 
                 boss.slime_battle(0, player)
+
                 if player.health <= 0:
                     player.game_over()
-                    break
+                    return ""
 
 
     def warriorking_sim(self, player, boss, bag):
@@ -470,6 +548,7 @@ class BattleSimulator:
                 print("Warrior: You are strong! I did not expect this to be the day I was slain!")
                 print("Warrior: As a token for beating me take this! I looted it from the library, it could be useful.")
                 print("You placed the device in your bag!")
+
                 return ""
 
             boss.warrior_battle(0, player)
