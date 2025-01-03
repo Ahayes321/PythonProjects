@@ -19,10 +19,11 @@ class Player:
 
 
 
-    #Player Stats
+    #Shows the players name. Used for display.
     def __repr__(self):
         return self.name
-   
+
+   #Shows a list of stats that the player has.
     def show_stats(self):
         return "Here are {name} stats: /n Attack: {damage} /n Health: {health} /n Stamina: {stamina}.".format(name = self.name, damage = self.damage,
         health = self.health, stamina = self.stamina) 
@@ -63,13 +64,15 @@ class Player:
             print("Game Over!")
             exit("Returning to Main Menu")
 
-    
+    #Displays the actions that a player can take
     def potential_actions(self):
        print("""
         Movement: Enter W,A,S,D to move 
         Stats Checker: Enter S to view stats
         Inventory: Enter I to view items
         """)
+
+    #This method allows the player to move up, down, left, or right. Uses WASD.
     def move(self, key):
         if key in ("W","w"):
             if self.xpos > 0:
@@ -103,30 +106,31 @@ class Player:
             else:
                 print("Cannot move in this direction: Try again")
                 return 0
-        
+
+    #Allows the player to use a Potion and heal.
     def use_potion(self, bag):
         return bag.use_potion(self)
                         
-    
+#Keeps track of the number of Potions available to use.
 class Inventory:
-    
+
+    #Constructor
     def __init__(self):
         self.bagspace = [Potion, Potion, Potion, Potion, Potion]
         self.stone_count = 3
         
-    
+    #Shows amount of potions
     def __repr__(self):
         for i in range(len(self.bagspace)):
             print(str(i + 1) + ". Potion")
         return ""
 
-    
+    #Adds an items to the bag
     def add_item(self, item):
         self.bagspace.append(item)
-    
-    def remove_item(self, item):
-        self.bagspace.remove(item)
 
+
+    #Heals the player and removes the potion from the bag.
     def use_potion(self, player):
         if self.bagspace:
             self.bagspace.pop(0)
@@ -136,10 +140,7 @@ class Inventory:
             return "Potion Used!"
         return "No valid Potion!"
 
-
-
-
-    
+#Used to heal player
 class Potion:
     def __init__(self):
         pass
@@ -147,11 +148,8 @@ class Potion:
     def __repr__(self):
         description = "Potion"
         return description
-class Key:
-    def __init__(self):
-        pass
-    def __repr__(self):
-        description = "A golden key. Must unlock something..."
+
+#Used to decode ciphertext.
 class CipherDecoder:
     def __init__(self):
         self.name = "Decoder"
@@ -159,13 +157,14 @@ class CipherDecoder:
         description = "Decodes ciphertext!"
         return description
 
+    #Takes in a message and an offset and decodes the given message.
     def caesar_decode(self,message, offset):
         alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z']
         new_message = []
         for symbol in message:
             if symbol in alphabet:
-                new_message.append(alphabet[(alphabet.index(symbol) + offset) % 26])
+                new_message.append(alphabet[(alphabet.index(symbol) + offset) % 26]) #Uses mod 26 to stay within bounds of the alphabet list
             else:
                 new_message.append(symbol)  # If string is not a letter then it does not offset.
 
@@ -188,12 +187,13 @@ class Castle:
         self.P15 = False
         self.P20 = False
         
-
+    #Displays the game world as a 2D array
     def display_world(self):
         for i in self.game_world:
             print(i)
         return ""
-    
+
+    #Updates where the player is positioned in the game world
     def update_position(self, player, key):
         curr_x, curr_y = player.xpos, player.ypos
         moving = player.move(key)
@@ -202,19 +202,21 @@ class Castle:
         
         if moving == 1:
             self.game_world[curr_x][curr_y] = "-"
-    
+
+    #This method triggers events within the castle.
     def items_in_castle(self, player, bag):
         boss_arena = BattleSimulator(player)
         SK_complete = False
 
         self.numbers_in_castle(player, bag)
 
+        #Triggers a lock puzzle
         if self.game_world[0][6] == player:
             print("You have stumbled upon a storage room: Inside you notice a trap door with a lock:")
             print("On the lock you can enter three numbers from 0 to 9.")
             code = input("What numbers would you like to try:")
 
-            if code == "835":
+            if code == "835":   #If correct lock code is determined. You get a stone
                 print("CLICK!")
                 print("The door has opened! You discover a chest that is glowing yellow:")
                 print("You open the chest a find a bright yellow stone.")
@@ -224,32 +226,33 @@ class Castle:
             else:
                 print("This code did not work. Must be clues somewhere...")
                 return
-    
+
+        #Triggers an event with a caesar cipher. Must provide an offset and determine the code.
         elif self.game_world[3][1] == player:
             print("You have entered the library!")
             print("You notice a figure reading a book!")
             print("Librarian: Oh my! Well hello there! I am the librarian of this castle hehe")
             print("Librarian: I am trying to crack this cipher but I cannot figure it out!")
-            print("Librarian: The ciphertext is: \"qtyo esp dezyp lyo qppo te ez esp hpww!\"")
+            print("Librarian: The ciphertext is: \"qtyo esp dezypd lyo qppo te ez esp hpww!\"")
 
 
-            if self.WK_complete:
+            if self.WK_complete:    #If the Warrior has been defeated
                 print()
                 print("Librarian: Is that a cipher device!")
                 print("If only we knew what the offset was")
 
-                offset = input("What offset would you like to use?")
+                offset = input("What offset would you like to use?") #The offset of the cipher
 
                 if offset == "15":
                     decoder = CipherDecoder()
-                    print(decoder.caesar_decode("qtyo esp dezyp lyo qppo te ez esp hpww!", 15))
+                    print(decoder.caesar_decode("qtyo esp dezyp lyo qppo te ez esp hpww!", 15)) #Decodes the encrypted message with the correct offset.
                 else:
                     print("This offset did nothing!")
 
             decoded = input("Do you know what the ciphertext says: ")
 
 
-            if decoded == "find the stones and feed it to the well!":
+            if decoded == "find the stones and feed it to the well!": #Gain a stone if correct message is found
                 print("Librarian: You cracked it! Well done!")
                 print("Hmmm interesting, I actually happen to have a stone on me! I guess you deserve it for breaking the code")
                 print("You have acquired a stone!")
@@ -257,7 +260,8 @@ class Castle:
             else:
                 print("That text does not seem to make sense!")
                 return
-        
+
+        #Triggers ending fight if all three stones have been collected in the castle
         elif self.game_world[4][3] == player:
             print("You have entered the Castle Courtyard")
             print("You notice a Well in the center of the Courtyard")
@@ -270,8 +274,10 @@ class Castle:
                 print("VRRRRRRRAAAAAAROOOOOM!!!!")
                 print("A giant stone beast has emerged from the well! You notice that within the beast is the face of the King!")
                 print()
-                boss_arena.stonebeast_sim(player, StoneBeast(), bag)
+                boss_arena.stonebeast_sim(player, StoneBeast(), bag) #Triggers StoneBeast boss fight
                 return 3
+
+        #Triggers event with the Warrior King. Must have defeated 15 enemies before you are able to trigger the event fully.
         elif self.game_world[6][6] == player and self.WK_complete == False:
             print("You have reach the Throne Room!")
             print()
@@ -369,6 +375,7 @@ class Castle:
             print("On the paper you notice a bright number in red")
             print()
             print("8")
+            print()
 
         elif self.game_world[6][2] == player:
             print("You arrive to a bedroom chambers.")
@@ -376,12 +383,14 @@ class Castle:
             print("On the note you notice a bright number in red")
             print()
             print("3")
+            print()
 
         elif self.game_world[2][5] == player:
             print("You arrive to the kitchen.")
             print("In the kitchen you notice a bright number in red posted on door.")
             print()
             print("5")
+            print()
 
         elif self.game_world[4][4] == player and self.SK_complete and self.WK_complete:
             print("Alchemist: Oh what device do you have there!")
@@ -416,7 +425,7 @@ class Mob:
 class Warrior:
     def __init__(self):
         self.name = "Ragnar \"Deathbringer\" Thorson"
-        self.health = 30
+        self.health = 40
         self.stamina = 100
         self.damage = 30
 
@@ -451,7 +460,7 @@ class Warrior:
 class StoneBeast:
     def __init__(self):
         self.name = "Glowing Behemoth"
-        self.health = 10
+        self.health = 60
         self.stamina = 1000
         self.damage = 1
     
@@ -525,8 +534,6 @@ class SlimeKing:
             self.goo_shot(player)
 
 
-       
-
 class BattleSimulator:
     def __init__(self, player):
         self.hero = player
@@ -570,9 +577,8 @@ class BattleSimulator:
             if player.health <= 0:
                 player.game_over()
 
-    
+    #Simulates a battle between the Slime King boss and player
     def slimeking_sim(self, player, boss, bag):
-            chance = random.randint(0, 101)
         
             while boss.health > 0:
 
@@ -608,7 +614,7 @@ class BattleSimulator:
                     player.game_over()
                     return ""
 
-
+    #Simulates a battle between the Warrior King and the player
     def warriorking_sim(self, player, boss, bag):
         chance = random.randint(0, 101)
 
@@ -646,6 +652,7 @@ class BattleSimulator:
                 player.game_over()
                 print("You have been defeated!")
 
+    #Simulates a battle between the StoneBeast and the player
     def stonebeast_sim(self, player, boss, bag):
         while boss.health > 0:
 
@@ -665,7 +672,7 @@ class BattleSimulator:
             elif action == "K":
                 player.use_potion(bag)
 
-            if boss.health <= 0:
+            if boss.health <= 0: #If you beat the boss
                 print("The beasts begins to crumble!")
                 print("All that remains is the King. You approach him.")
                 print("King: Thank you! You saved this kingdom!")
