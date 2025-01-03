@@ -1,6 +1,10 @@
 
 import random
 import sys
+
+from Demos.mmapfile_demo import offset
+
+
 class Player:
     
     #Player Constructor
@@ -150,10 +154,22 @@ class Key:
         description = "A golden key. Must unlock something..."
 class CipherDecoder:
     def __init__(self):
-        pass
+        self.name = "Decoder"
     def __repr__(self):
         description = "Decodes ciphertext!"
         return description
+
+    def caesar_decode(self,message, offset):
+        alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z']
+        new_message = []
+        for symbol in message:
+            if symbol in alphabet:
+                new_message.append(alphabet[(alphabet.index(symbol) + offset) % 26])
+            else:
+                new_message.append(symbol)  # If string is not a letter then it does not offset.
+
+        return "".join(new_message)
 class Castle:
 
     #Creates a 2D game world
@@ -190,6 +206,9 @@ class Castle:
     def items_in_castle(self, player, bag):
         boss_arena = BattleSimulator(player)
         SK_complete = False
+
+        self.numbers_in_castle(player, bag)
+
         if self.game_world[0][6] == player:
             print("You have stumbled upon a storage room: Inside you notice a trap door with a lock:")
             print("On the lock you can enter three numbers from 0 to 9.")
@@ -212,10 +231,26 @@ class Castle:
             print("You notice a figure reading a book!")
             print("Librarian: Oh my! Well hello there! I am the librarian of this castle hehe")
             print("Librarian: I am trying to crack this cipher but I cannot figure it out!")
-            print("Librarian: The ciphertext is: \"Qtyo esp dezyp lyo qppo te ez esp Hpww!\"")
+            print("Librarian: The ciphertext is: \"qtyo esp dezyp lyo qppo te ez esp hpww!\"")
+
+
+            if self.WK_complete:
+                print()
+                print("Librarian: Is that a cipher device!")
+                print("If only we knew what the offset was")
+
+                offset = input("What offset would you like to use?")
+
+                if offset == "15":
+                    decoder = CipherDecoder()
+                    print(decoder.caesar_decode("qtyo esp dezyp lyo qppo te ez esp hpww!", 15))
+                else:
+                    print("This offset did nothing!")
+
             decoded = input("Do you know what the ciphertext says: ")
 
-            if decoded == "Find the stones and feed it to the Well!":
+
+            if decoded == "find the stones and feed it to the well!":
                 print("Librarian: You cracked it! Well done!")
                 print("Hmmm interesting, I actually happen to have a stone on me! I guess you deserve it for breaking the code")
                 print("You have acquired a stone!")
@@ -326,6 +361,37 @@ class Castle:
         else:
             return "You traverse the halls!"
 
+    def numbers_in_castle(self, player, bag):
+        if self.game_world[0][2] == player:
+            print("You arrive at the garrison offices. You notice a desk full of papers.")
+            print("On the paper you notice a bright number in red")
+            print()
+            print("8")
+
+        elif self.game_world[6][2] == player:
+            print("You arrive to a bedroom chambers.")
+            print("You notice a small note on a side table")
+            print("On the note you notice a bright number in red")
+            print()
+            print("3")
+
+        elif self.game_world[2][5] == player:
+            print("You arrive to the kitchen.")
+            print("In the kitchen you notice a bright number in red posted on door.")
+            print()
+            print("5")
+
+        elif self.game_world[4][4] == player and self.SK_complete and self.WK_complete:
+            print("Alchemist: Oh what device do you have there!")
+            print("Alchemist: Well if it isn't my old cipher device!")
+            print("Alchemist: The cipher device allows you to decode hidden messages.")
+            print("Alchemist: However you need to know the offset of the numbers")
+            print()
+            print("Alchemist: I'm not sure who used it last but the King always would use set the device to 15")
+            print("Alchemist: His security measures were not the best...")
+
+
+
       
 class Mob:
 
@@ -348,7 +414,7 @@ class Mob:
 class Warrior:
     def __init__(self):
         self.name = "Ragnar \"Deathbringer\" Thorson"
-        self.health = 70
+        self.health = 1
         self.stamina = 100
         self.damage = 30
 
@@ -548,6 +614,8 @@ class BattleSimulator:
                 print("Warrior: You are strong! I did not expect this to be the day I was slain!")
                 print("Warrior: As a token for beating me take this! I looted it from the library, it could be useful.")
                 print("You placed the device in your bag!")
+                decoder = CipherDecoder()
+                bag.add_item(decoder)
 
                 return ""
 
