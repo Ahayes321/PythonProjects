@@ -112,7 +112,7 @@ class Inventory:
     
     def __init__(self):
         self.bagspace = [Potion, Potion, Potion, Potion, Potion]
-        self.stone_count = 0
+        self.stone_count = 3
         
     
     def __repr__(self):
@@ -217,11 +217,10 @@ class Castle:
             if code == "835":
                 print("CLICK!")
                 print("The door has opened! You discover a chest that is glowing yellow:")
-                print("Upon getting closer to the chest you notice another lock")
-                if Key in bag:
-                    print("CLICK!")
-                    print("The chest opened and you found a glowing yellow stone. You decide to put it in your bag")
-                    bag.stone_count += 1
+                print("You open the chest a find a bright yellow stone.")
+                print()
+                print("You take the stone!")
+                bag.stone_count += 1
             else:
                 print("This code did not work. Must be clues somewhere...")
                 return
@@ -262,13 +261,16 @@ class Castle:
         elif self.game_world[4][3] == player:
             print("You have entered the Castle Courtyard")
             print("You notice a Well in the center of the Courtyard")
+            print(bag.stone_count)
 
             if bag.stone_count == 3:
-                print("The stone in your bag begin to vibrate")
+                print("The stones in your bag begin to vibrate")
                 print("Suddenly they levitate out and fly into the well")
                 print()
                 print("VRRRRRRRAAAAAAROOOOOM!!!!")
                 print("A giant stone beast has emerged from the well! You notice that within the beast is the face of the King!")
+                print()
+                boss_arena.stonebeast_sim(player, StoneBeast(), bag)
                 return 3
         elif self.game_world[6][6] == player and self.WK_complete == False:
             print("You have reach the Throne Room!")
@@ -414,7 +416,7 @@ class Mob:
 class Warrior:
     def __init__(self):
         self.name = "Ragnar \"Deathbringer\" Thorson"
-        self.health = 1
+        self.health = 30
         self.stamina = 100
         self.damage = 30
 
@@ -449,7 +451,7 @@ class Warrior:
 class StoneBeast:
     def __init__(self):
         self.name = "Glowing Behemoth"
-        self.health = 200
+        self.health = 10
         self.stamina = 1000
         self.damage = 1
     
@@ -458,18 +460,38 @@ class StoneBeast:
 
        if chance > 50:
         print("You have been dazed by the light")
+        print("Player damaged! {health} HP!".format(health=player.health))
+        print("You seem more tired: Stamina: {stam}").format(stam=player.stamina)
         player.stamina -= 15
-        player.damage -= 1
+        player.damage -= 10
     
     def slam(self, player):
+        print("The beast slams its arms down!")
+        print("Player damaged! {health} HP!".format(health=player.health))
         player.health -= self.damage
     
     def fireup(self):
+        print("The fire burns within the beast")
         self.damage += 5
     
     def collossal_slam(self, player):
+        print("The beast slams its whole body down!")
+        print()
+        print("Player damaged! {health} HP!".format(health=player.health))
         self.health -= 30
         player.health -= 50
+
+    def stone_battle(self, chance, player):
+        chance = random.randint(0, 101)
+        if chance <= 25:
+
+            self.dazed(player)
+        elif chance > 25 and chance <= 50:
+            self.collossal_slam(player)
+        elif chance > 50 and chance <= 75:
+            self.slam(player)
+        else:
+            self.fireup()
 
 class SlimeKing:
     def __init__(self):
@@ -620,6 +642,38 @@ class BattleSimulator:
                 return ""
 
             boss.warrior_battle(0, player)
+            if player.health <= 0:
+                player.game_over()
+                print("You have been defeated!")
+
+    def stonebeast_sim(self, player, boss, bag):
+        while boss.health > 0:
+
+            action = input("Choose an action: (Attack: A, Rest: R, Heal: K)")
+
+            if action == "A":
+                attack_action = input("Basic Attack (B) or Heavy Attack (H)")
+                if attack_action == "B":
+                    player.basic_attack(boss)
+                elif attack_action == "H":
+                    player.heavy_attack(boss)
+
+            elif action == "R":
+                player.rest_up()
+
+
+            elif action == "K":
+                player.use_potion(bag)
+
+            if boss.health <= 0:
+                print("The beasts begins to crumble!")
+                print("All that remains is the King. You approach him.")
+                print("King: Thank you! You saved this kingdom!")
+                print()
+                exit("Congrats! You have completed the game!")
+
+            boss.stone_battle(0, player)
+
             if player.health <= 0:
                 player.game_over()
                 print("You have been defeated!")
